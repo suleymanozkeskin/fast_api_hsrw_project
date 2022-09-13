@@ -1,5 +1,4 @@
-"# fast_api_hsrw_project" 
-"# fast_api_hsrw_project" 
-"# fast_api_hsrw_project" 
-"# fast_api_hsrw_project" 
+THIS PROJECT IS CURRENTLY NOT COMPLETE.
+THIS SECTION WILL BE UPDATED LATER AS PROJECT NEARS TO DEPLOYMENT PHASE.
+
 "# fast_api_hsrw_project" 
