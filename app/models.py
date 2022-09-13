@@ -111,7 +111,7 @@ class EnumForRatingScore(enum.Enum):
     
 class Rating_Tutor(Base):
     __tablename__ = "rating_tutors"
-    id = Column(Integer,primary_key=True,nullable=False) 
+    id = Column(Integer, primary_key=True, nullable=False) 
     user_email = Column(String, ForeignKey("users.email",ondelete="CASCADE"),primary_key=True)
     #Username (FK) (UserDetailsID if you change the primary key of the UserDetails table)
     tutor_profile_id = Column(Integer, ForeignKey("be_tutor_posts.id",ondelete="CASCADE"),primary_key=True)
