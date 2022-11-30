@@ -90,7 +90,15 @@ def update_tutor_hiring_post(id: int , updated_post: schemas.HireTutor, db: Sess
     post_query = db.query(models.Hire_Tutor).filter(models.Hire_Tutor.id == id)
     
     post = post_query.first()
-            
+
+     #lets check if mail that user wants to update is already in our database or not:
+    email_query = db.query(models.Hire_Tutor).filter(models.Hire_Tutor.employer_email == updated_post.employer_email).first()
+
+    if not email_query:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This mail does not exist in our database.")
+   
+
+
     if post  == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail = f"post with id: {id} does not exist.")
@@ -143,7 +151,7 @@ def delete_tutor_posts(id: int,db: Session = Depends(get_db),current_user: int =
 
 # COME BACK LATER FOR GETTING A LIST OF ALL EXISTING TUTORS
 
-@router.get("/employer_list", response_model=List[schemas.HireTutor]) ## here we have to import "List" from "typing" library that so we can convert the posts into a list.
+@router.get("/tutor_list", response_model=List[schemas.HireTutor]) ## here we have to import "List" from "typing" library that so we can convert the posts into a list.
                                                               ## Otherwise it will try to put all posts into the shape one of post therefore it won't work!
 def get_tutors_list(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     

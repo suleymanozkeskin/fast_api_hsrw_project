@@ -83,16 +83,6 @@ class Dislike(Base):
 
 
     
-# class Vote(Base):
-#     __tablename__ = "votes"
-#     id = Column(Integer,primary_key=True, nullable=False,autoincrement=True)
-#     user_id = Column(Integer, ForeignKey("users.id",ondelete="CASCADE"),primary_key=True)
-#     post_id = Column(Integer, ForeignKey("posts.id",ondelete="CASCADE"),primary_key=True)
-#     #upvotes = Column(Integer,server_default="0")
-#     #downvotes =  Column(Integer,server_default="0")
-    
-#     #vote_direction = Column(String,) this is for later so that I can implement reddit type up/downvote system
-        
 class Event_Post(Base):
     __tablename__ = "events"
     id = Column(Integer, primary_key=True,nullable=False,autoincrement=True)
@@ -137,28 +127,3 @@ class Hire_Tutor(Base):
     
  
  
-class EnumForRatingScore(enum.Enum):
-    one = 1
-    two = 2 
-    three = 3 
-    four = 4
-    five = 5
-    six = 6
-    seven = 7
-    eight = 8
-    nine = 9
-    ten = 10 
-    
-class Rating_Tutor(Base):
-    __tablename__ = "rating_tutors"
-    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True) # Verilen oy'un id'si
-    user_email = Column(String, ForeignKey("users.email",ondelete="CASCADE"),primary_key=True)
-    #Username (FK) (UserDetailsID if you change the primary key of the UserDetails table)
-    tutor_profile_id = Column(Integer, ForeignKey("be_tutor_posts.id",ondelete="CASCADE"),primary_key=True) # Oylanan tutorun id'si
-    #PostID (FK)    
-    RatingScore = Column(Integer)
-    DateRated = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-   # Rater_id = Column()
-    
-## In the app, you would then pull back every RankScore with that PostID and do the calculation based off a count of said PostID.
-    

@@ -45,33 +45,34 @@ def get_tutor_profiles(db: Session = Depends(get_db), current_user: int = Depend
 @router.post("/tutor_profile",status_code=status.HTTP_201_CREATED, response_model=schemas.BeTutor)
 def create_tutor_profile(post: schemas.BeTutor, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
      
-    # profile_query = db.query(models.Be_Tutor.id).all()
     
-    # print(profile_query)
-    
-    
-    # if current_user.id in profile_query: 
-    #         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"user with user_id: {current_user.id}  already has a profile.")
-    
-    
-    ## CANNOT CATCH THE ERROR !!!!!! SOLVE THIS
-    
-    try:
-        new_post = models.Be_Tutor(id = current_user.id,  **post.dict()) 
+    #lets check if the logged in user is matching with the user who is trying to create the post:
+    if post.email != current_user.email: # then we will check if the user who is logged in , actually owns the post
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+
+    #lets check if the user has already created a profile:
+    profile = db.query(models.Be_Tutor).filter(models.Be_Tutor.id == current_user.id).first()
+    if profile:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="You already have a profile." )
+
+
+    else:
+        try:
+            new_post = models.Be_Tutor(id = current_user.id,  **post.dict()) 
         
-        db.add(new_post)
-        db.commit()
-        db.refresh(new_post) # retrieve new post 
-        return new_post
+            db.add(new_post)
+            db.commit()
+            db.refresh(new_post) # retrieve new post 
+            return new_post
 
-    except UniqueViolationError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Tutor profile with this credentials already exist")
+        except UniqueViolationError:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Tutor profile with this credentials already exist")
 
 
 
-    # except errors.lookup(UNIQUE_VIOLATION) as e:
-    #     return e
-    
+
+  
 
 
 
@@ -139,6 +140,11 @@ def delete_tutor_posts(id: int,db: Session = Depends(get_db),current_user: int =
 def update_tutor_profiles(id: int ,  updated_post: schemas.BeTutor, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
     
     
+    #lets check if mail that user wants to update is already in our database or not:
+    email_query = db.query(models.Be_Tutor).filter(models.Be_Tutor.email == updated_post.email).first()
+
+    if not email_query:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This mail does not exist in our database.")
    
     post_query = db.query(models.Be_Tutor).filter(models.Be_Tutor.id == id)
     
@@ -151,10 +157,12 @@ def update_tutor_profiles(id: int ,  updated_post: schemas.BeTutor, db: Session 
     # if post.tutor_email == None:
     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
     #                         detail = f"following tutor email: {tutor_email} does not exist.",tutor_email)
-        
-    if post.tutor_email != current_user.email:
+
+
+    if post.email != current_user.email:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED ,detail="Not authorized to perform requested action." )
     
+
         
     post_query.update(updated_post.dict(), synchronize_session=False)
     
@@ -180,50 +188,22 @@ def update_tutor_profiles(id: int ,  updated_post: schemas.BeTutor, db: Session 
 
 
 
+# lets get a list of employers who are looking for tutors:
+
+@router.get("/employer_list", response_model=List[schemas.HireTutor])
+def get_employer_list(db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+        
+        posts = db.query(models.Hire_Tutor).all()
+        
+        if not posts:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"There is no employer who is looking for a tutor.")
+            
+
+        return posts
 
 
-#### RATING:
 
 
-# @router.post("/rate_tutor", status_code = status.HTTP_201_CREATED)
-# def rate(rate: schemas.RateTutor , db: Session = Depends(database.get_db), current_user: int = Depends(oauth2.get_current_user)):
-    
-#     rate_point_list = [1,2,3,4,5,6,7,8,9,10]
-    
-#     # so if we wanna make a vote, we will check whether there is an already existing vote or not.
-#     # then we are gonna filter by Vote.post_id and see if there is already a vote for this  specific post_id 
-#     # however this is not enough because multiple people can vote on the same post
-#     # so we have to do a second check: models.Vote.user_id == current_user.id
-    
-#     profile = db.query(models.Be_Tutor).filter(models.Be_Tutor.id == rate.profile_id).first() # We are gonna take query the post and if the post does not exist , user can not vote on it.
-#     if not profile:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {rate.profile_id} does not exist.")
-     
-    
-#     rate_query = db.query(models.Be_Tutor).filter(models.rate.post_id == rate.profile_id, models.Be_Tutor.user_id == current_user.id)
-    
-#     found_rate = rate_query.first()
-      
-#     if (rate.point == rate_point_list):
-#         if found_rate:
-#             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"user {current_user.id} has already rated on this profile {rate.profile_id} .")
-        
-#         new_vote = models.Rate(profile_id = rate.profile_id, user_id = current_user.id)
-        
-        
-        
-#         db.add(new_vote)
-#         db.commit()
-#         return{"message": "successfully added vote"}   
-        
-    
-   
-    
-#     else:
-#         if not found_rate:
-#             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vote does not exist.")
-        
-        
-#         rate_query.delete(synchronize_session=False)
-#         db.commit()
-#         return {"message" : "successfully deleted vote."}
+
+

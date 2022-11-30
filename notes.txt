@@ -1,6 +1,2 @@
 
-
-IMPORTANT ISSUES TO BE FIXED:
-
-Voting process is not correctly implemented yet.
-Search parameters does not work on getting posts.(POSTMAN)
+Automated testing has not been addded yet.
