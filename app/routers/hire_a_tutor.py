@@ -25,44 +25,24 @@ router = APIRouter(
 
 
 
-# @router.get("/tutor_profiles", response_model=List[schemas.TutorList]) ## here we have to import "List" from "typing" library that so we can convert the posts into a list.
-#                                                               ## Otherwise it will try to put all posts into the shape one of post therefore it won't work!
-# def get_profile(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    
-#     # MAMIYE SOR, SEARCH ÖZELLIGI CALISMIYOR , GERISINDE PROBLEM YOK.
-    
-    
-
-    
-#     #if limit < int(all_existing_posts_count):
-#     #    return posts + f"It seems like there are not that many posts yet."
-    
-#     profiles = db.query(models.Hire_Tutor).all()
-#     print(type(profiles))
-#     return profiles  
+# get all tutors:
+@router.get("/tutors", response_model=List[schemas.HireTutor])
+def all_tutors(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
+    tutors = db.query(models.Hire_Tutor).offset(skip).limit(limit).all()
+    return tutors
 
 
-
-
-@router.get("/employer_profile/{id}", response_model=schemas.HireTutor) ## here we have to import "List" from "typing" library that so we can convert the posts into a list.
-                                                                 ## Otherwise it will try to put all posts into the shape one of post therefore it won't work!
-def get_tutor_profile(id: int,db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
- 
-    post = db.query(models.Hire_Tutor).filter(models.Hire_Tutor.id == id).first()
-    
-
-    if not post:
+# get tutor by id:
+@router.get("/tutor_profile/{id}", response_model=schemas.HireTutor)
+def get_tutor(id: int, response: Response, db: Session = Depends(get_db)):
+    tutor = db.query(models.Hire_Tutor).filter(models.Hire_Tutor.id == id).first()
+    if not tutor:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Tutor profile with id: {id} was not found.")
-        
-    # if post.id != current_user.id: # then we will check if the user who is logged in , actually owns the post 
-    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
-    
-    return post
-
-    
+                            detail=f"Tutor with the id {id} is not available")
+    return tutor
 
 
+# create a job advertisement to hire a tutor:
 @router.post("/hire_tutor_posts",status_code=status.HTTP_201_CREATED, response_model=schemas.HireTutor)
 def create_tutor_hiring_posts(post: schemas.HireTutor, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
      
@@ -76,6 +56,28 @@ def create_tutor_hiring_posts(post: schemas.HireTutor, db: Session = Depends(get
     db.commit()
     db.refresh(new_post) # retrieve new post 
     return new_post
+
+
+# @router.get("/tutor_profile/{id}", response_model=schemas.HireTutor) ## here we have to import "List" from "typing" library that so we can convert the posts into a list.
+#                                                                  ## Otherwise it will try to put all posts into the shape one of post therefore it won't work!
+# def get_tutor_profile(id: int,db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+ 
+#     post = db.query(models.Hire_Tutor).filter(models.Hire_Tutor.id == id).first()
+    
+
+#     if not post:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+#                             detail=f"Tutor profile with id: {id} was not found.")
+        
+#     # if post.id != current_user.id: # then we will check if the user who is logged in , actually owns the post 
+#     #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+    
+#     return post
+
+    
+
+
+
 
 
 
@@ -152,4 +154,21 @@ def get_tutors_list(db: Session = Depends(get_db), current_user: int = Depends(o
     
     posts = db.query(models.Hire_Tutor).all()
     return posts  
+
+
+
+@router.get("/tutor_profiles/", response_model=schemas.HireTutor) ## here we have to import "List" from "typing" library that so we can convert the posts into a list.
+                                                                 ## Otherwise it will try to put all posts into the shape one of post therefore it won't work!
+def get_tutor_profile(db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+ 
+    post = db.query(models.Hire_Tutor).filter(models.Hire_Tutor.id == id).first()
     
+
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Tutor profile with id: {id} was not found.")
+        
+    # if post.id != current_user.id: # then we will check if the user who is logged in , actually owns the post 
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+    
+    return post    

@@ -40,6 +40,7 @@ def get_tutor_profiles(db: Session = Depends(get_db), current_user: int = Depend
     
 
 
+# --->   METHOD BELOW IS NOT WORKING YET. I AM TRYING TO MAKE IT WORK. <--- 
 
 @router.post("/tutor_profile",status_code=status.HTTP_201_CREATED, response_model=schemas.BeTutor)
 def create_tutor_profile(post: schemas.BeTutor, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
@@ -66,6 +67,8 @@ def create_tutor_profile(post: schemas.BeTutor, db: Session = Depends(get_db), c
     except UniqueViolationError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Tutor profile with this credentials already exist")
 
+
+
     # except errors.lookup(UNIQUE_VIOLATION) as e:
     #     return e
     
@@ -84,7 +87,7 @@ def get_tutor_profile(id: int,db: Session = Depends(get_db),current_user: int = 
 
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"post with id: {id} was not found.")
+                            detail=f"Tutor profile with id: {id} was not found.")
         
     if post.id != current_user.id: # then we will check if the user who is logged in , actually owns the post 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
@@ -115,7 +118,7 @@ def delete_tutor_posts(id: int,db: Session = Depends(get_db),current_user: int =
     
     if post == None:  # then we will check if the post is not there 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail = f"post with id: {id} does not exist.")
+                            detail = f"Tutor profile with id: {id} does not exist.")
         
     if post.id != current_user.id: # then we will check if the user who is logged in , actually owns the post 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
@@ -133,7 +136,7 @@ def delete_tutor_posts(id: int,db: Session = Depends(get_db),current_user: int =
 
 
 @router.put("/tutor_profile/{id}",response_model=schemas.BeTutor)
-def update_tutor_post(id: int ,  updated_post: schemas.BeTutor, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+def update_tutor_profiles(id: int ,  updated_post: schemas.BeTutor, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
     
     
    
@@ -143,7 +146,7 @@ def update_tutor_post(id: int ,  updated_post: schemas.BeTutor, db: Session = De
             
     if post  == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail = f"post with id: {id} does not exist.")
+                            detail = f"Tutor profile with id: {id} does not exist.")
      
     # if post.tutor_email == None:
     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 

@@ -35,6 +35,7 @@ class UserOut(BaseModel):
     class Config:
         orm_mode = True
 
+
 class Post(PostBase):
     id: int
     created_at: datetime
@@ -44,18 +45,36 @@ class Post(PostBase):
     class Config:
         orm_mode = True 
 
-class PostVoteOut(BaseModel):
+
+class ShowPost(BaseModel):
+    id: int
+    title: str
+    content: str
+    published: bool
+    created_at: datetime
+    owner_id: int
+    owner: UserOut
+
+
+    class Config:
+        orm_mode = True
+
+
+
+
+
+
+class PostOut(BaseModel):
     
     Post: Post
-    votes: int
-    # upvotes: int
-    # downvotes: int
+    
+    # likes: int
+    # dislikes: int
     
         
     class Config:
         orm_mode = True
     
-        
 
 
     
@@ -74,14 +93,21 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserOut
     
+
 class TokenData(BaseModel):
     id: Optional[str] = None
     
     
-class Vote(BaseModel):
-    post_id: int
-    dir: conint(ge=-1,le=1) # direction which is going to be an integer "-1" or "1";
+# class Vote(BaseModel):
+#     post_id: int
+#     dir: conint(ge=-1,le=1) # direction which is going to be an integer "-1" or "1";
     
 #     This works perfectly but you can as well create an enum instance to be able to present the exact accepted values:
 # from enum import IntEnum
@@ -95,10 +121,14 @@ class Vote(BaseModel):
     
 
 class EventPost(BaseModel):
-    event_title: str
-    event_content: str
-    event_date: str
+    title: str
+    content: str
+    date: str
     organizer_name: str
+    image_url: str
+    image_url_type: str
+
+
     
     class Config:
         orm_mode = True
@@ -142,12 +172,11 @@ class EventPostOut(BaseModel):
     
 class TutorPost(BaseModel):
   
-    tutor_post_title = str
-    tutor_post_content = str
-    tutor_post_faculty_name = str
-    tutor_class_name = str
-    #tutor_email = EmailStr
-    #tutor_grade = float 
+    title = str
+    content = str
+    faculty_name = str
+    class_name = str
+    
     
     
     class Config:
@@ -179,22 +208,20 @@ class HireTutor(BaseModel):
     
     
 class BeTutor(BaseModel):
-    tutor_profile_title: str
-    tutor_profile_explanation: str
-    tutor_faculty_name: str 
+    profile_title: str
+    profile_explanation: str
+    faculty_name: str 
     tutor_gpa: float
-    tutor_email: str
-    tutor_gpa: float
+    email: str
     hourly_rate: float
-    tutor_email: str
+    
     
     class Config:
         orm_mode = True
 
 
-class RateTutor1(BaseModel):
-    pass
+
     
-class RateTutor2(RateTutor1):
+class RateTutor(BaseModel):
     RatingScore: conint(ge=0,le=11)
     orm_mode = True    

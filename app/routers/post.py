@@ -13,43 +13,15 @@ router = APIRouter(
 )
 
 
+# get all posts
+@router.get("/posts", response_model=List[schemas.ShowPost])
+def get_all_posts(db: Session = Depends(get_db)):
+    posts = db.query(models.Post).all()
+    return posts
 
-@router.get("/posts", response_model=List[schemas.PostVoteOut]) ## here we have to import "List" from "typing" library that so we can convert the posts into a list.
-                                                              ## Otherwise it will try to put all posts into the shape one of post therefore it won't work!
-def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
-    
-    # MAMIYE SOR, SEARCH ÖZELLIGI CALISMIYOR , GERISINDE PROBLEM YOK.
-    
-    # cursor.execute("""SELECT * FROM posts """)
-    # posts = cursor.fetchall()
-    
-    # .offset(skip) means whatever number is assigned to skip in the defined function , will be skipped while retrieving posts.
-    
-    # search: [Optional]str = ""   means that users can make a search for something specific. From title ,content etc. 
-    # In this case its gonna be title with the following code: .filter(models.Post.title.contains(search))
-    
-    print(search)
-    #posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()                       #.filter(models.Post.owner_id == current_user.id).all()
-    
-    
-    #if limit < int(all_existing_posts_count):
-    #    return posts + f"It seems like there are not that many posts yet."
-    
-    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(
-        models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    return posts  
-    
-    
-    # posts = db.query(models.Post, func.count(models.Post.id).label("votes").group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all())
-    # return posts  
-    
-    
-    # left outer join -> .join(models.Vote,models.Vote.post_id == models.Post.id, isouter=True)
-    # count and name as -> func.count(models.Vote.post_id).label("votes"))
-   
-    # print(results)
-    # return results
-# WHICH TRANSLATES INTO SQL QUERY AS FOLLOWING:
+
+
+
 
     
     
@@ -153,7 +125,7 @@ def delete_posts(id: int,db: Session = Depends(get_db),current_user: int = Depen
                             detail = f"post with id: {id} does not exist.")
         
     if post.owner_id != current_user.id: # then we will check if the user who is logged in , actually owns the post 
-        raise HTTPException(status_code=status.HTTP_403_UNAUTHORIZED,detail="Not authorized to perform requested action." )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
     
     
     post_query.delete(synchronize_session=False)  # and finally if everything checks out , we will let them to delete the post.
@@ -211,3 +183,215 @@ def test_post(db: Session = Depends(get_db)):
 
 
 
+
+
+
+
+# like a post:
+@router.post("/posts/{id}/like")
+def like_post(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+        
+        post = db.query(models.Post).filter(models.Post.id == id).first()
+        
+        if not post:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"post with id: {id} was not found.")
+            
+        # if post.owner_id == current_user.id:
+        #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+# we will check if the user has already liked the post or not:
+        if db.query(models.Like).filter(models.Like.post_id == id, models.Like.user_id == current_user.id).first():
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+        like = models.Like(user_id = current_user.id, post_id = id)
+        db.add(like)
+        db.commit()
+        db.refresh(like)
+
+        return like
+
+
+
+
+
+
+##### !!!!!!!!!!!!!!!!!!!!!!  
+# unlike a post:  ### THIS SECTION IS NOT WORKING PROPERLY , IT CAUSES TO DELETE THE POST INSTEAD OF DELETING THE LIKE + SHOWS AN ERROR "IS NOT PERSISTEN WITHIN THIS SESSION" ###
+@router.delete("/posts/{id}/like")
+def unlike_post(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+            
+            post = db.query(models.Post).filter(models.Post.id == id).first()
+            
+            if not post:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail=f"post with id: {id} was not found.")
+                
+            # if post.owner_id == current_user.id:
+            #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+    # we will check if the user has already liked the post or not:  
+            like = db.query(models.Like).filter(models.Like.post_id == id, models.Like.user_id == current_user.id).first()
+
+            if not like:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+            db.delete(like)
+            db.commit()
+            db.refresh(like)
+
+            return like
+
+# get all the likes of a post:
+@router.get("/posts/{id}/like")
+def get_likes(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+                
+                post = db.query(models.Post).filter(models.Post.id == id).first()
+                
+                if not post:
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                        detail=f"post with id: {id} was not found.")
+                    
+                if post.owner_id == current_user.id:
+                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+                
+
+                likes = db.query(models.Like).filter(models.Like.post_id == id).all()
+
+                return likes
+
+
+
+
+# get all the posts that a user has liked:    ##### NOT WORKING PROPERLY -- UNPROCESSABLE ENTITY #####
+@router.get("/posts/liked")
+def get_liked_posts(db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+                
+                posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+                
+                if not posts:
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                        detail=f"post with id: {id} was not found.")
+                    
+                # if post.owner_id == current_user.id:
+                #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+                
+
+                likes = db.query(models.Like).filter(models.Like.user_id == current_user.id).all()
+
+                return likes
+
+
+
+
+
+# give a dislike to a post:
+@router.post("/posts/{id}/dislike")
+def dislike_post(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+            
+            post = db.query(models.Post).filter(models.Post.id == id).first()
+            
+            if not post:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail=f"post with id: {id} was not found.")
+                
+            # if post.owner_id == current_user.id:
+            #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+            # check if the user has already disliked the post or not:
+            if db.query(models.Dislike).filter(models.Dislike.post_id == id, models.Dislike.user_id == current_user.id).first():
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+            dislike = models.Dislike(user_id = current_user.id, post_id = id)
+            db.add(dislike)
+            db.commit()
+            db.refresh(dislike)
+
+            return dislike
+
+# undislike a post:
+@router.delete("/posts/{id}/dislike")
+def undislike_post(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+                    
+                    ## Getting "is not persistent" error here: ## 
+
+
+                    post = db.query(models.Post).filter(models.Post.id == id).first()
+                    
+                    if not post:
+                        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                            detail=f"post with id: {id} was not found.")
+                        
+                    if post.owner_id == current_user.id:
+                        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )        
+
+                    dislike = db.query(models.Dislike).filter(models.Dislike.post_id == id, models.Dislike.user_id == current_user.id).first()
+
+                    if not dislike:
+                        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+
+                    db.delete(dislike)
+                    db.commit()
+                    db.refresh(dislike)
+
+                    return dislike
+
+
+
+
+# get all the dislikes of a post:
+@router.get("/posts/{id}/dislike")
+def get_dislikes(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+                            
+                            post = db.query(models.Post).filter(models.Post.id == id).first()
+                            
+                            if not post:
+                                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                                    detail=f"post with id: {id} was not found.")
+                                
+                            if post.owner_id == current_user.id:
+                                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+    
+                            
+    
+                            dislikes = db.query(models.Dislike).filter(models.Dislike.post_id == id).all()
+    
+                            return dislikes
+
+# get all the posts that a user has disliked:
+@router.get("/posts/disliked")
+def get_disliked_posts(db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+                                    
+                                    posts = db.query(models.Post).join(models.Dislike).filter(models.Dislike.user_id == current_user.id).all()
+            
+                                    return posts
+
+
+# get all likes and dislikes of a post:
+@router.get("/posts/{id}/likes")
+def get_likes_dislikes(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
+                                            
+                                            post = db.query(models.Post).filter(models.Post.id == id).first()
+                                            
+                                            if not post:
+                                                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                                                    detail=f"post with id: {id} was not found.")
+                                                
+                                            # if post.owner_id == current_user.id:
+                                            #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action." )
+            
+                                            # get the count of likes and dislikes:
+                                            likes_count = db.query(models.Like).filter(models.Like.post_id == id).count()
+                                            dislikes_count = db.query(models.Dislike).filter(models.Dislike.post_id == id).count()
+
+
+                                            # THIS PART IS ONLY NECESSARY IF WE WANT TO GET THE USERS WHO LIKED AND DISLIKED THE POST:
+                                            #likes = db.query(models.Like).filter(models.Like.post_id == id).all()
+                                            #dislikes = db.query(models.Dislike).filter(models.Dislike.post_id == id).all()
+            
+                                            #return {"likes":likes,"dislikes":dislikes,"likes_count":likes_count,"dislikes_count":dislikes_count}   
+                                            return {"likes_count":likes_count,"dislikes_count":dislikes_count}  
+
+                                    

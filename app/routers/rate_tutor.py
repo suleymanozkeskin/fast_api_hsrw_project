@@ -37,35 +37,45 @@ router = APIRouter(tags=["Rate Tutor"] )
    
    
 @router.post("/rate_tutor/{id}",status_code=status.HTTP_201_CREATED)
-def rate(id: int,rate: schemas.RateTutor2, db: Session = Depends(database.get_db), current_user: int = Depends(oauth2.get_current_user)):
+def rate(id: int,rate: schemas.RateTutor, db: Session = Depends(database.get_db), current_user: int = Depends(oauth2.get_current_user)):
     
     
  
     
-    # We are gonna check if this specific user has already rated this specific post.
-    rate_query= db.query(models.Rating_Tutor).filter(models.Be_Tutor.id == id,models.Rating_Tutor.user_email == current_user.email).first()
-    
-   # found_rate = rate_query.first()
+    # We are gonna check if this specific user has already rated this specific profile
+    #rate_query= db.query(models.Rating_Tutor).filter(models.Be_Tutor.id == id,models.Rating_Tutor.user_email == current_user.email).first()
+
+    #found_rate = rate_query.first()
 
       
-     #new_post = models.Post(owner_id=current_user.id,  **post.dict()) ## this method will take the post as dictionary and automatically import it from there as opposed to manual typing version below:
+    #new_post = models.Post(owner_id=current_user.id,  **post.dict()) ## this method will take the post as dictionary and automatically import it from there as opposed to manual typing version below:
     # new_post = models.Post(title=post.title, content=post.content , published= post.published)  
         
     print("Hello World")
-    if rate_query:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail= f"user with the following email address: {current_user.email} has already rated this tutor profile ")
+    # if rate_query:
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail= f"user with the following email address: {current_user.email} has already rated this tutor profile ")
+    print('___')
+    print(id) # id ✅
+    print('___') #
+    print(current_user.email) # <app.models.User object at 0x7f27b6a91670> Ali.Geyik@hsrw.org
+    print('___')
+    print(rate.RatingScore) # 2 puan ✅
+    print('___')
+
     new_rate = models.Rating_Tutor(user_email = current_user.email,tutor_profile_id = id , RatingScore = rate.RatingScore)
+    
     db.add(new_rate)
     db.commit()
-    models.Rating_Tutor
-    return("message: succesfully rated tutor profile.")
+    db.refresh(new_rate)
 
-    if not rate_query:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = f"Rate does not exist.")
+    return new_rate
+
+    # if not rate_query:
+    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = f"Rate does not exist.")
     
-    rate_query.delete(synchronize_session=False)
-    db.commit()
-    return{"Successfully deleted rate."}        
+    # rate_query.delete(synchronize_session=False)
+    # db.commit()
+    # return{"Successfully deleted rate."}        
             
         
         

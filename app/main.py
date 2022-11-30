@@ -5,7 +5,7 @@ from app.routers import event_post, rate_tutor
 
 from . import models
 from .database import engine
-from .routers import be_a_tutor, hire_a_tutor, post, user, auth, vote,event_post,rate_tutor
+from .routers import be_a_tutor, hire_a_tutor, post, user, auth,event_post,rate_tutor
 from .config import settings
     
 
@@ -39,7 +39,7 @@ app.add_middleware(
 app.include_router(post.router)
 app.include_router(user.router)
 app.include_router(auth.router)
-app.include_router(vote.router)
+#app.include_router(vote.router)
 app.include_router(event_post.router)
 app.include_router(be_a_tutor.router)
 app.include_router(hire_a_tutor.router)

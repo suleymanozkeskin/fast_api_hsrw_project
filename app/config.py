@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     algorithm: str
     access_token_expire_minutes: int
 
+
+# By doing the following we will tell pydantic to read the environment variables from the file .env and use them as the values for the variables in the class:
     class Config:
         env_file = ".env"
 
