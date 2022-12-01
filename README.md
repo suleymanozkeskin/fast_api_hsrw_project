@@ -34,7 +34,7 @@ FastAPI , PostgreSQL, Alembic
         pip install -r requirements.txt
         ```
 -   Run the application
-    -   type it to terminal
+    -   This will run the app and reload everytime there is a detected change
         ```bash
         uvicorn app.main:app --reload
         ```
