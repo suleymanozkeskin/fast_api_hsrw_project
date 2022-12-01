@@ -33,8 +33,8 @@ FastAPI , PostgreSQL, Alembic
         ```bash
         pip install -r requirements.txt
         ```
--   To run the application
-
+-   Run the application
+    -   type it to terminal
         ```bash
         uvicorn app.main:app --reload
         ```
