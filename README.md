@@ -1,4 +1,4 @@
-#What is this project?
+# What is this project?
 
 This is a website project for a university in Germany.Only enrolled students and university staff will be able to use the platform. Platform will serve as a forum where students and professors can publicy create discussions , make criticism on topics relevant to university.
 
@@ -6,15 +6,15 @@ Another form of service will be employing and advertising tutors. Students can c
 
 And last but not least , members will be able to organize/share a wide scope of events and make it known to every student.An invitation only type of event modes will be added too.Depending on the event , website will serve as a ticket selling point too.
 
-#Stage of project
+# Stage of project
 
 This project is not completed at the moment. For backend; automated testing and payment systems will be added. Frontend will be builded simultaneously.
 
-#What has been done so far ?
+# What has been done so far ?
 
 Authentication , encryption of passwords, crud operations for users, posts, events, employers, tutors. Initialization for database migration. Manual testing of endpoints has been done via Postman.
 
-#About the tech stack
+# About the tech stack
 
 FastAPI , PostgreSQL, Alembic
 
