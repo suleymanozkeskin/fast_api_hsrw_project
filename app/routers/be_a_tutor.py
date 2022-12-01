@@ -40,7 +40,7 @@ def get_tutor_profiles(db: Session = Depends(get_db), current_user: int = Depend
     
 
 
-# --->   METHOD BELOW IS NOT WORKING YET. I AM TRYING TO MAKE IT WORK. <--- 
+
 
 @router.post("/tutor_profile",status_code=status.HTTP_201_CREATED, response_model=schemas.BeTutor)
 def create_tutor_profile(post: schemas.BeTutor, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
