@@ -1,6 +1,6 @@
 # What is this project?
 
-This is a website project for a university in Germany.Only enrolled students and university staff will be able to use the platform. Platform will serve as a forum where students and professors can publicy create discussions , make criticism on topics relevant to university.
+This is a website project for a university in Germany.Only enrolled students and university staff will be able to use the platform. Platform will serve as a forum where students and professors can publicy create discussions.There will be an anonymous mode where a verified student/professor can actually state their opinion without revealing their identity.
 
 Another form of service will be employing and advertising tutors. Students can create a profile as a tutor and at the same time look and employ tutors according to their needs.An online payment system as a microservice will be implemented for those who wants to handle payments through this website.
 
