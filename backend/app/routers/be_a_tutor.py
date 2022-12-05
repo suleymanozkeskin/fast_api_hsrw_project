@@ -12,7 +12,7 @@ from ..database import get_db
 from psycopg2.errorcodes import UNIQUE_VIOLATION
 from psycopg2 import errors
 
-from asyncpg.exceptions import UniqueViolationError
+
 
 
 
